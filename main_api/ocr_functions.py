@@ -335,6 +335,33 @@ def parse_table(text):
 
     return {'columns': header, 'data': data}
 
+# def parse_table(text):
+#     # Split the text into rows
+#     rows = text.strip().split('\n')
+
+#     # Use regular expression to extract column names considering irregular spacing
+#     header_match = re.match(r'\s*(.*?)\s*$', rows[0])
+#     header = re.split(r'\s+', header_match.group(1).strip()) if header_match else []
+
+#     # Extract the data (remaining rows)
+#     data = []
+#     for row in rows[1:]:
+#         # Use regular expression to find patterns resembling values
+#         values = re.findall(r'[^\s"]+|"[^"]+"', row)
+
+#         # Remove quotes from values if present
+#         values = [v.strip('"') for v in values]
+
+#         # Create a dictionary for each row with header names as keys
+#         current_row_dict = {header[i]: values[i] for i in range(min(len(header), len(values)))}
+
+#         # Check if the row has any non-empty values before adding it to the result
+#         if any(current_row_dict.values()):
+#             data.append(current_row_dict)
+
+#     return data, header
+
+
 # Add the process_ocr_data function here as well
 
 def process_ocr_data(ocr_text):

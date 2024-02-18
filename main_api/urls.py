@@ -1,10 +1,15 @@
 # main_api/urls.py
 from django.urls import path
-from .views import upload_and_extract_data, upload_and_extract_image
+from .views import fetch_extracted_data, update_document, upload_and_extract_data, upload_and_extract_image, fetch_collection_data, delete_document
 
 urlpatterns = [
     path('upload/', upload_and_extract_data, name='upload_and_extract_data'),
     path('upload/image/', upload_and_extract_image, name='upload_and_extract_image'),
+    path('fetch_extracted_data/', fetch_extracted_data, name='fetch_extracted_data'),  # Add this line
+    path('fetch_collection_data/<str:collection_name>/', fetch_collection_data, name='fetch_collection_data'),  # Add this line
+    path('update_document/<int:id>/', update_document, name='update_document'),  # Add this line
+    path('delete_document/<int:document_id>/', delete_document, name='delete_document'),
+
     # Add other URL patterns as needed for your file operations
 ]
 

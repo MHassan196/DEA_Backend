@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'authentication.apps.AuthenticationConfig',
     'corsheaders',
     'main_api',
+    'handwriting_recognition'
     
 ]
 

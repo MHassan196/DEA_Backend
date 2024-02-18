@@ -13,4 +13,4 @@ class Document(models.Model):
     file_type = models.CharField(max_length=10, blank=True, null=True)  # New field for the file type
 
     def __str__(self):
-        return f"{self.file.name}"
+        return f"{self.file.name}" 
