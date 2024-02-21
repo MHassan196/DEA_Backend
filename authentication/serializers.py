@@ -5,7 +5,7 @@ from rest_framework.authtoken.views import Token
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['name', 'username', 'email', 'password', 'phone', 'address', 'purpose', 'otherPurpose', 'profile_picture']
+        fields = ['id', 'name', 'username', 'email', 'password', 'phone', 'address', 'purpose', 'otherPurpose', 'profile_picture']
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
@@ -28,6 +28,11 @@ class UserSerializer(serializers.ModelSerializer):
         user = CustomUser.objects.create_user(**validated_data)
         Token.objects.create(user=user)
         return user
+    
+    def to_representation(self, instance):
+        representation = super(UserSerializer, self).to_representation(instance)
+        representation['id'] = instance.id
+        return representation
     
 
 # from rest_framework import serializers

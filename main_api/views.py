@@ -8,6 +8,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
+from handwriting_recognition.models import ProcessedImage
 
 from main_api import admin
 from main_api.serializers import DocumentSerializer
@@ -448,6 +449,31 @@ def fetch_collection_data(request, collection_name):
             return JsonResponse({'collection_data': list(collection_data)}, status=200)
         else:
             return JsonResponse({'error': 'Requested collection does not exist'}, status=404)
+    else:
+        return JsonResponse({'error': 'User not authenticated'}, status=401)
+    
+
+
+@api_view(['GET'])
+def fetch_dashboard_stats(request):
+    user = request.user  
+    if user.is_authenticated:
+        try:
+            user_instance = CustomUser.objects.get(username=user.username)
+        except CustomUser.DoesNotExist:
+            user_instance = CustomUser.objects.create(username=user.username)
+
+        # Fetch stats for main_api
+        main_api_stats = {
+            'totalDocuments': Document.objects.filter(user=user_instance).count(),
+            'pdfDocuments': Document.objects.filter(user=user_instance, file_type='pdf').count(),
+            'wordDocuments': Document.objects.filter(user=user_instance, file_type='docx').count(),
+            'excelDocuments': Document.objects.filter(user=user_instance, file_type__in=['xlsx', 'xls']).count(),
+            'imageDocuments': Document.objects.filter(user=user_instance, file_type__in=['png', 'jpg']).count(),
+        }
+
+        return JsonResponse(main_api_stats, status=200)
+
     else:
         return JsonResponse({'error': 'User not authenticated'}, status=401)
     

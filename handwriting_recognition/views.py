@@ -236,3 +236,24 @@ def delete_hand_document(request, document_id):
 
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
+        
+
+@api_view(['GET'])
+def fetch_handwriting_stats(request):
+    user = request.user
+    if user.is_authenticated:
+        try:
+            user_instance = CustomUser.objects.get(username=user.username)
+        except CustomUser.DoesNotExist:
+            user_instance = CustomUser.objects.create(username=user.username)
+
+        # Fetch stats for handwriting_recognition
+        handwriting_stats = {
+            'handwrittenDocumentsCount': ProcessedImage.objects.filter(user=user_instance).count(),
+            'handwrittenDocuments': ProcessedImage.objects.filter(user=user_instance, file_type__in=['png', 'jpg']).count(),
+
+        }
+
+        return JsonResponse(handwriting_stats, status=200)
+    else:
+        return JsonResponse({'error': 'User not authenticated'}, status=401)

@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
@@ -109,14 +110,23 @@ def user_logout(request):
 def get_user_profile(request):
     user = request.user  # Retrieve the authenticated user
     serializer = UserSerializer(user)  # Serialize the user data
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    serialized_data = serializer.data
+    # Include the user's ID in the serialized data
+    serialized_data['id'] = user.id
+    return Response(serialized_data, status=status.HTTP_200_OK)
 
 
-@api_view(['PUT'])
+@api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
-def update_user_profile(request):
-    user = request.user  # Retrieve the authenticated user
-    serializer = UserSerializer(user, data=request.data, partial=True)  # Use partial update
+def update_user_profile(request, id):
+    user = request.user
+
+    # Make sure the user making the request is the one being updated
+    if user.id != id:
+        return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    serializer = UserSerializer(user, data=request.data, partial=True)
+
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
