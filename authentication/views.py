@@ -5,6 +5,8 @@ from rest_framework.decorators import api_view, permission_classes
 from .models import CustomUser
 from .serializers import UserSerializer
 from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
 # from django.shortcuts import render, redirect
 # from django.contrib.auth.models import User
 # from django_otp.oath import TOTP
@@ -131,3 +133,31 @@ def update_user_profile(request, id):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def change_password(request):
+    user = request.user
+
+    # Get the data from the request
+    current_password = request.data.get('current_password')
+    new_password = request.data.get('new_password')
+    confirm_password = request.data.get('confirm_password')
+
+    # Validate the current password
+    if not user.check_password(current_password):
+        return Response({'error': 'Incorrect current password'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Validate new password and confirm password
+    if new_password != confirm_password:
+        return Response({'error': 'New password and confirm password do not match'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Change the password
+    user.set_password(new_password)
+    user.save()
+
+    # Update the session to maintain the user's login status
+    update_session_auth_hash(request, user)
+
+    return Response({'message': 'Password changed successfully'}, status=status.HTTP_200_OK)
