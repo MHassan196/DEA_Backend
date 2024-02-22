@@ -57,6 +57,9 @@ EMAIL_HOST = os.environ.get('EMAIL_HOST')  # Replace with your email host for gm
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')  # Replace with your email username
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 
+# Password reset settings
+PASSWORD_RESET_TIMEOUT_DAYS = 1
+
 AUTH_USER_MODEL = 'authentication.CustomUser'
 
 REST_FRAMEWORK = {
@@ -178,3 +181,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'profile_pics')
 MEDIA_URL = '/profile_pics/'
+
+
+FRONTEND_URL = 'http://localhost:3000'

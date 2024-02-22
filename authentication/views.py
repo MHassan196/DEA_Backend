@@ -81,30 +81,6 @@ def user_logout(request):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
-# accounts/views.py
-
-# from rest_framework.decorators import api_view, permission_classes
-# from rest_framework.permissions import IsAuthenticated
-# from rest_framework.response import Response
-# from rest_framework import status
-# from django.contrib.auth import update_session_auth_hash
-# from .serializers import ChangePasswordSerializer
-
-# @api_view(['POST'])
-# @permission_classes([IsAuthenticated])
-# def change_password(request):
-#     if request.method == 'POST':
-#         serializer = ChangePasswordSerializer(data=request.data)
-#         if serializer.is_valid():
-#             user = request.user
-#             if user.check_password(serializer.data.get('old_password')):
-#                 user.set_password(serializer.data.get('new_password'))
-#                 user.save()
-#                 update_session_auth_hash(request, user)  # To update session after password change
-#                 return Response({'message': 'Password changed successfully.'}, status=status.HTTP_200_OK)
-#             return Response({'error': 'Incorrect old password.'}, status=status.HTTP_400_BAD_REQUEST)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
 
 @api_view(['GET'])
@@ -161,3 +137,40 @@ def change_password(request):
     update_session_auth_hash(request, user)
 
     return Response({'message': 'Password changed successfully'}, status=status.HTTP_200_OK)
+
+
+# views.py
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.conf import settings
+from django.shortcuts import get_object_or_404
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+from .models import CustomUser
+
+@api_view(['POST'])
+def forgot_password(request):
+    email = request.data.get('email')
+
+    user = get_object_or_404(CustomUser, email=email)
+
+    # Generate reset token
+    uid = urlsafe_base64_encode(force_bytes(user.id))
+    token = default_token_generator.make_token(user)
+
+    # Create a reset password link
+    reset_link = f"{settings.FRONTEND_URL}/reset-password/{uid}/{token}/"
+
+    # Send the reset link to the user's email
+    subject = 'Reset Your Password'
+    message = render_to_string('email/reset_password_email.txt', {
+        'user': user,
+        'reset_link': reset_link,
+    })
+    send_mail(subject, message, settings.EMAIL_HOST_USER, [email])
+
+    return Response({'message': 'Reset link sent to your email'}, status=status.HTTP_200_OK)
